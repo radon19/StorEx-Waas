@@ -31,10 +31,13 @@ export default function RootLayout({
     >
       <Providers>
 
-      <Header/>
-        </Providers>       
+      
+             
 
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Header/>
+        {children}</body>
+</Providers>  
     </html>
   );
 }
