@@ -2,7 +2,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
 import db from "@/app/db"
-import { generateKeyPairSigner } from "@solana/kit";
+import { createWallet } from '@/app/utils/wallet'
 
 
 
@@ -15,45 +15,47 @@ const handler = NextAuth({
     })
   ],
   callbacks: {
-    async signIn({user,account,profile,email,credentials}) {
-      if (! (account?.provider==="google")) {
-        return false
-      }
-      const userMail = user.email;
-      if (!userMail) {
-        return false;
-      }
-      const userDb = await db.user.findFirst({
-        where:{
-          username:userMail
+    async signIn({ user, account, profile, email, credentials }) {
+      if (account?.provider === "google") {
+
+        const userMail = user.email;
+        if (!userMail) {
+          return false;
         }
-      })
-
-      if (userDb) {
-        return true;
-      }
-
-      const keypair = await generateKeyPairSigner();
-      await db.user.create({
-        data:{
-          username : userMail,
-          provider : "Google",
-          solWallet: {
-            create:{
-              publicKey:"",
-              privateKey:""
-            }
-          },
-          inrWallet : {
-            create:{
-              balance:0
-            }
+        const userDb = await db.user.findFirst({
+          where: {
+            username: userMail
           }
+        })
 
+        if (userDb) {
+          return true;
         }
-      })
 
-      return true
+        const wallet = await createWallet();
+        await db.user.create({
+          data: {
+            username: userMail,
+            provider: "Google",
+            solWallet: {
+              create: {
+                publicKey: wallet.address,
+                privateKey: wallet.secretKey
+              }
+            },
+            inrWallet: {
+              create: {
+                balance: 0
+              }
+            }
+
+          }
+        })
+
+
+      }
+
+      return false
     }
   }
 })
