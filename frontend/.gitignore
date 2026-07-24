@@ -44,4 +44,5 @@ next-env.d.ts
 # agents
 .agents
 .claude
+.windsurf
 
