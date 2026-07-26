@@ -1,47 +1,69 @@
 import { createSolanaRpc } from "@solana/kit";
 import axios from "axios";
+import { NextResponse } from "next/server";
 
 
-export const rpc = createSolanaRpc("https://api.devnet.solana.com")
+export const rpc = createSolanaRpc("https://solana-mainnet.g.alchemy.com/v2/alch_-KRs5czXcPYKPrVztDpIt")
 
-export const SUPPORTED_TOKENS:{
-    name:string,
-    mint:string,
-    native:boolean
-}[] = [{
+export interface TokenDetails {
+    name: string;
+    mint: string;
+    native: boolean;
+     
+    image: string;
+ 
+}
+export const SUPPORTED_TOKENS:TokenDetails[] = [{
     name:"USDC",
     mint:"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    native:false
+    native:false,
+    image:"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png"
 },{
     name : "USDT",
     mint : "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-    native:false
+    native:false,
+    image:"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg"
 },{
     name:"SOL",
     mint:"So11111111111111111111111111111111111111112",
-    native:false
+    native:true,
+    image:"https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
 }
 ]
 
 
 export async function getSupportedTokens() {
+  
+  
   const mints = SUPPORTED_TOKENS.map(t => t.mint).join(",");
-
-  const res = await fetch(`https://api.jup.ag/price/v2?ids=${mints}`, {
+  
+  
+  const res = await fetch(`https://api.jup.ag/price/v3?ids=${mints}`, {
     next: { revalidate: 60 },
     headers: {
         'x-api-key': process.env.NEXT_PUBLIC_JUP_AG_API_KEY ?? ""
     }
   });
 
+ 
+  
+
   if (!res.ok) {
     return null;
   }
 
-  const { data } = await res.json();
+  
+  
 
+  const  data  = await res.json();
+
+  
+  
+  
+ 
+ 
   return SUPPORTED_TOKENS.map(token => ({
     ...token,
-    price: data[token.mint]?.price 
+    price: data[token.mint]?.usdPrice 
   }));
 }

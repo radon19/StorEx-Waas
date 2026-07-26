@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PrimaryButton } from "./Button";
 import { useEffect, useState } from "react";
+import { useTokens } from "../hooks/useTokens";
 
 
 export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
@@ -49,6 +50,10 @@ function Assets({ publicKey }: {
 }) {
     const [copied, setCopied] = useState(false);
 
+    const { loading, TokenBalances } = useTokens(publicKey);
+
+
+
     useEffect(() => {
         if (copied) {
             let timeout = setTimeout(() => {
@@ -63,15 +68,21 @@ function Assets({ publicKey }: {
     }, [copied])
 
 
+    if (loading) {
+        return <div>Skeleton</div>
+    }
+
     return <div className="text-slate-500 mt-4">
         Account assets
 
         <br />
         <div className="flex justify-between">
-            <div></div>
+            <div>
+                {TokenBalances?.totalBalance.toFixed(2)} Usd
+            </div>
 
             <div>
-                <PrimaryButton onClick={()=>{
+                <PrimaryButton onClick={() => {
                     setCopied(true)
                     navigator.clipboard.writeText(publicKey)
                 }}>{copied ? "Copied" : "Wallet Address"}</PrimaryButton>
@@ -80,6 +91,9 @@ function Assets({ publicKey }: {
 
         </div>
 
+        <div>
+            {JSON.stringify(TokenBalances?.tokens)}
+        </div>
 
     </div>
 }
