@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { TokenDetails } from "../lib/constants";
 import axios from "axios";
 
-interface TokenWithBalance extends TokenDetails{
+export interface TokenWithBalance extends TokenDetails{
     balance:number,
     usdBalance : number
 }
@@ -16,7 +16,7 @@ export function useTokens(address:string) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      axios.get(`/api/token?address=${address}`)
+      axios.get(`/api/tokens?address=${address}`)
         .then((res) => {
             setTokenBalances(res.data);
             setLoading(false);

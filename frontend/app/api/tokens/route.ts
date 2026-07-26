@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchToken, findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import {   findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import { rpc, getSupportedTokens } from "@/app/lib/constants";
-import { address, lamports, lamportsToSol } from '@solana/kit'
+import { address } from '@solana/kit'
 
 
 export async function GET(req: NextRequest) {
@@ -28,9 +28,6 @@ export async function GET(req: NextRequest) {
 
 
     const balances = await Promise.allSettled(supportedTokens.map(token => getAccountBalance(token, address)))
-    console.log(balances)
-
-    console.log(supportedTokens);
 
     const tokens = supportedTokens.map((token, index) => {
         const balance = balances[index].status === "fulfilled" ? balances[index].value : 0;

@@ -9,7 +9,7 @@ export interface TokenDetails {
     name: string;
     mint: string;
     native: boolean;
-     
+    price? : number
     image: string;
  
 }
