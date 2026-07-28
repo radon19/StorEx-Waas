@@ -2,16 +2,29 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { PrimaryButton } from "./Button";
+import { PrimaryButton, TabButton } from "./Button";
 import { useEffect, useState } from "react";
 import { useTokens } from "../hooks/useTokens";
 import { TokenList } from "./TokenList";
+
+type Tab = "tokens" | "send" | "add_funds" | "withdraw" | "swap"
+
+const tab : {id:Tab,name:string}[] = [
+    {id:"tokens",name:"Tokens" },
+    {id:"send",name:"Send"},
+    {id:"add_funds",name:"Add Funds"},
+    {id:"withdraw",name:"Withdraw"},
+    {id:"swap",name:"Swap"}
+]
+
 
 
 export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
 
     const session = useSession();
     const router = useRouter();
+
+    const [selectedTab, setSelectedTab] = useState<Tab>("tokens");
 
     if (session.status === "loading") {
         return <div>Loading...</div>;
@@ -30,9 +43,17 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
         <div className="pt-8 flex justify-center ">
             <div className="max-w-4xl  rounded-2xl shadow-xl w-full p-12">
                <Greeting image={session?.data?.user?.image ?? ""} name={session?.data?.user?.name ?? ""} />
-
-
-
+<div className="p-2">
+                {
+                    tab.map(tab=>
+                        <TabButton key={tab.id} active={tab.id === selectedTab} 
+                        onClick={()=>{
+                            setSelectedTab(tab.id)
+                        }}
+                        >{tab.name}</TabButton>
+                    )
+                }
+</div>
                 <Assets publicKey={publicKey} />
             </div>
         </div>
