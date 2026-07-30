@@ -31,17 +31,19 @@ function SwapInputRow({onSelect, selectedToken}:{
 }) {
     
     return <div className="border flex justify-between">
-        <AssetSelector selectedToken={selectedToken }  />
+        <AssetSelector selectedToken={selectedToken } onSelect={onSelect}  />
 
     </div>
 }
 
-function AssetSelector({selectedToken}:{
-    selectedToken : TokenDetails
+function AssetSelector({selectedToken,onSelect}:{
+    selectedToken : TokenDetails,
+    onSelect : (asset:TokenDetails)=>void
 }) {
     return <div>
         <select>
-
+            <option selected><img src={selectedToken.image}/>{selectedToken.name}</option>
+            {SUPPORTED_TOKENS.filter(x=>x.name!=selectedToken.name).map(x=><option onClick={()=>onSelect(x)}><img src={x.image}/>{x.name}</option>)}
         </select>
     </div>
 }
