@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import { useState } from 'react';
 import { 
   ArrowLeft, 
   ArrowUpDown, 
@@ -13,6 +13,9 @@ import { TokenDetails } from '../lib/tokens';
 export default function SwapInterface({token}:{
     token : TokenDetails
 }) {
+
+const [slippage, setSlippage] = useState("0.5%");
+  const options = ["0.5%", "1.5%", "3%"];
     const router = useRouter();
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
@@ -21,7 +24,7 @@ export default function SwapInterface({token}:{
         
         {/* Header Section */}
         <div className="mb-8">
-          <button onClick={()=>router.push("/dashboard")} className="rounded-xl bg-black p-2 flex items-center gap-2 text-white font-semibold  mb-6 hover:bg-indigo-950 transition-colors">
+          <button onClick={()=>router.push("/dashboard")} className="rounded-xl bg-black p-2 pr-4 flex items-center gap-2 text-white font-semibold  mb-6 hover:bg-indigo-950 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
@@ -102,9 +105,23 @@ export default function SwapInterface({token}:{
             Coversion rate
           </div>
           
-          <div>
-            Slippage
-          </div>
+          <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-sm font-medium text-slate-600">
+      <span className="px-3 text-black-400 font-semibold">Slippage :</span>
+      
+      {options.map((opt) => (
+        <button
+          key={opt}
+          onClick={() => setSlippage(opt)}
+          className={`px-4 py-1.5 rounded-xl transition-all ${
+            slippage === opt
+              ? "bg-slate-900 text-white  "
+              : "hover:bg-slate-100 text-slate-600"
+          }`}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
         </div>
 
         {/* Action Buttons */}
