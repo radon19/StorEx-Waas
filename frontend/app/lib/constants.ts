@@ -1,4 +1,9 @@
+import { createSolanaRpc } from "@solana/kit";
 import { SUPPORTED_TOKENS } from "./tokens";
+
+
+export const rpc = createSolanaRpc("https://solana-mainnet.g.alchemy.com/v2/alch_-KRs5czXcPYKPrVztDpIt")
+
 
 
 export async function getSupportedTokens() {

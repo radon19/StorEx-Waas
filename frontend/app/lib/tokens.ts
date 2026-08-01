@@ -1,6 +1,5 @@
 import { createSolanaRpc } from "@solana/kit";
 
-export const rpc = createSolanaRpc("https://solana-mainnet.g.alchemy.com/v2/alch_-KRs5czXcPYKPrVztDpIt")
 
 export interface TokenDetails {
   name: string;

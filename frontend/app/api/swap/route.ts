@@ -1,6 +1,8 @@
 import { authOptions } from "@/app/lib/auth";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import {z } from "zod";
+import { swapRequestSchema } from "@/app/schemas/validations";
 import db from "@/app/db/index";
 import {
     createKeyPairSignerFromBytes,
@@ -8,6 +10,9 @@ import {
     getTransactionEncoder,
     partiallySignTransaction,
 } from "@solana/kit";
+
+
+
 
 type OrderResponse = {
     transaction: string | null; // base64-encoded transaction, null if no taker, "" if quote-only
@@ -37,11 +42,25 @@ const BASE_URL = "https://api.jup.ag/swap/v2";
 
 // Load wallet from base58 secret key in .env
 export async function POST(request: NextRequest) {
-    const data: {
-        inputMint: string;
-        outputMint: string;
-        amount: string;
-    } = await request.json();
+    const body = await request.json();
+
+    // 3. Validate the data at runtime using safeParse
+    const parsedData = swapRequestSchema.safeParse(body);
+
+    if (!parsedData.success) {
+        return NextResponse.json({
+            message: "Invalid input data",
+            // flatten().fieldErrors turns the Zod errors into a clean object
+            // e.g., { amount: ["Amount is required"] }
+            errors: z.treeifyError(parsedData.error), 
+        }, {
+            status: 400
+        });
+    }
+
+    // 5. You now have 100% type-safe and runtime-verified data!
+    const data = parsedData.data;
+
 
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -66,9 +85,6 @@ export async function POST(request: NextRequest) {
         })
     }
 
-  
-
-
     const API_KEY = process.env.JUP_AG_API_KEY;
     if (!API_KEY) {
         return NextResponse.json({
@@ -78,6 +94,7 @@ export async function POST(request: NextRequest) {
             status: 500
         });
     }
+
     // Step 1: Get an order
     const orderResponse = await fetch(
         `${BASE_URL}/order?` +
@@ -149,3 +166,4 @@ export async function POST(request: NextRequest) {
 
 
 }
+
