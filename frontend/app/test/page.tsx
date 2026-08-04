@@ -59,7 +59,7 @@ const [slippage, setSlippage] = useState("0.5%");
                 type="text" 
                 placeholder="0" 
                 className="w-full bg-transparent text-right text-5xl font-light text-slate-800 outline-none placeholder:text-slate-800"
-                readOnly
+                
               />
             </div>
             
