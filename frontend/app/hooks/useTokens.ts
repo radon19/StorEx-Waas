@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { TokenDetails } from "../lib/tokens";
 import axios from "axios";
 
+
+
 export interface TokenWithBalance extends TokenDetails{
     balance:number,
     usdBalance : number
@@ -29,3 +31,4 @@ export function useTokens(address:string) {
     }
 
 }
+

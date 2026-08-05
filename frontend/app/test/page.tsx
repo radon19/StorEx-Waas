@@ -8,6 +8,11 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { SUPPORTED_TOKENS, TokenDetails } from '../lib/tokens';
+import { PrimaryButton } from '../components/Button';
+import { useAccountTokens } from '../hooks/getAccountTokens';
+
+
+
 
 export default function SwapInterface({ token }: {
   token: TokenDetails
@@ -18,8 +23,7 @@ export default function SwapInterface({ token }: {
 
   const [baseAsset, setBaseAsset] = useState(SUPPORTED_TOKENS[0]);
   const [quoteAsset, setQuoteAsset] = useState(SUPPORTED_TOKENS[1]);
-
-
+  const {loading,ownerTokens} = useAccountTokens();
   const [slippage, setSlippage] = useState("0.5%");
 
 
@@ -29,15 +33,25 @@ export default function SwapInterface({ token }: {
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-slate-100">
         {/* Header Section */}
         <div className="mb-8">
-          <button onClick={() => router.push("/dashboard")} className="rounded-xl bg-black p-2 pr-4 flex items-center gap-2 text-white font-semibold  mb-6 hover:bg-indigo-950 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
 
-          <div className="flex justify-between items-end">
+          <PrimaryButton  onClick={()=>{
+            router.push("/")
+          }} >
+<ArrowLeft className="w-4 h-4" />
+            Back
+
+
+          </PrimaryButton>
+
+
+                    <div className="flex justify-between items-end">
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Swap Tokens</h1>
 
-            {/* Powered by Jupiter mock */}
+            {/* Powered Jupiter mock */}
+            {loading ? <div>Loading...</div> : ownerTokens.map((item : any)=>{
+              
+
+            })}
 
           </div>
         </div>
