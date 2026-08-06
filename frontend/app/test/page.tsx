@@ -1,32 +1,48 @@
 "use client"
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ArrowLeft,
   ArrowUpDown,
   Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { SUPPORTED_TOKENS, TokenDetails } from '../lib/tokens';
-import { PrimaryButton } from '../components/Button';
 import BaseTokenSelect from '../lib/BaseTokenSelect';
 import QuoteTokenSelect from '../lib/QuoteTokenSelect';
+import { useTokens } from '../hooks/useTokens';
 
 
 
 
-export default function SwapInterface({ token }: {
-  token: TokenDetails
+export default function SwapInterface({ publicKey }: {
+  publicKey: string
 }) {
 
 
   const router = useRouter();
-
+  const { loading, TokenBalances } = useTokens(publicKey);
   const [baseAsset, setBaseAsset] = useState(SUPPORTED_TOKENS[0]);
   const [quoteAsset, setQuoteAsset] = useState(SUPPORTED_TOKENS[1]);
+  const [baseAmount, setBaseAmount] = useState<string>("");
+  const [quoteAmount, setQuoteAmount] = useState<string>("");
   const [slippage, setSlippage] = useState("0.5%");
 
+useEffect(() => {
+  if (!baseAmount) {
+    setQuoteAmount("");
+    return;
+  }
 
+  const timer = setTimeout(async () => {
+    try {
+      //yet to be addded
+    } catch (err) {
+      console.error(err);
+    }
+  }, 1000); // Wait 1 second after typing stops
+
+  return () => clearTimeout(timer);
+}, [baseAmount]);
 
 
   return (
@@ -36,16 +52,16 @@ export default function SwapInterface({ token }: {
         {/* Header Section */}
         <div className="mb-8">
 
-          
-            
 
 
-      
-                    <div className="flex justify-between items-end">
+
+
+
+          <div className="flex justify-between items-end">
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Swap Tokens</h1>
 
             {/* Powered Jupiter mock */}
-            
+
 
           </div>
         </div>
@@ -60,13 +76,22 @@ export default function SwapInterface({ token }: {
             <div className="flex items-center justify-between gap-4">
               {/* Token Selector */}
 
-      <BaseTokenSelect selected={baseAsset} onChange={setBaseAsset} excludeMint={quoteAsset.mint} />
+              <BaseTokenSelect selected={baseAsset} onChange={setBaseAsset} excludeMint={quoteAsset.mint} />
 
               {/* Amount Input */}
               <input
                 type="text"
+                value={baseAmount}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  if (/^\d*\.?\d*$/.test(value)) {
+                    setBaseAmount(value);
+                  }
+                }}
                 placeholder="0"
                 className="w-full bg-transparent text-right text-5xl font-light text-slate-800 outline-none placeholder:text-slate-800"
+
 
               />
             </div>
@@ -92,7 +117,7 @@ export default function SwapInterface({ token }: {
 
             <div className="flex items-center justify-between gap-4">
               {/* Token Selector */}
- <QuoteTokenSelect selected={quoteAsset} onChange={setQuoteAsset} excludeMint={baseAsset.mint} />
+              <QuoteTokenSelect selected={quoteAsset} onChange={setQuoteAsset} excludeMint={baseAsset.mint} />
             </div>
 
             <div className="flex items-center justify-between mt-4">
@@ -102,13 +127,13 @@ export default function SwapInterface({ token }: {
         </div>
 
         {/* Footer Settings & Details */}
-        <Slippage onSelect={(slip)=>
+        <Slippage onSelect={(slip) =>
           setSlippage(slip)
         }
-        setSlippage={setSlippage}
-        slippage={slippage}
+          setSlippage={setSlippage}
+          slippage={slippage}
         />
-         {/* Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex items-center justify-between gap-4">
           <button onClick={() => router.push("/dashboard")} className="px-6 py-4 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors">
             Cancel
@@ -127,34 +152,34 @@ export default function SwapInterface({ token }: {
 }
 
 
-function Slippage({onSelect,setSlippage,slippage}:{
-  onSelect : (slip : string)=>void,
-  setSlippage : (slip : string)=>void,
-  slippage : string
+function Slippage({ onSelect, setSlippage, slippage }: {
+  onSelect: (slip: string) => void,
+  setSlippage: (slip: string) => void,
+  slippage: string
 }) {
 
 
   const options = ["0.5%", "1.5%", "3%"];
-    return     <div className="flex items-center justify-between mb-8 px-2">
-          <div>
-            Coversion rate
-          </div>
+  return <div className="flex items-center justify-between mb-8 px-2">
+    <div>
+      Coversion rate
+    </div>
 
-          <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-sm font-medium text-slate-600">
-            <span className="px-3 text-black-400 font-semibold">Slippage :</span>
+    <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-sm font-medium text-slate-600">
+      <span className="px-3 text-black-400 font-semibold">Slippage :</span>
 
-            {options.map((opt) => (
-              <button
-                key={opt}
-                onClick={() => setSlippage(opt)}
-                className={`px-4 py-1.5 rounded-xl transition-all ${slippage === opt
-                    ? "bg-slate-900 text-white  "
-                    : "hover:bg-slate-100 text-slate-600"
-                  }`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
+      {options.map((opt) => (
+        <button
+          key={opt}
+          onClick={() => setSlippage(opt)}
+          className={`px-4 py-1.5 rounded-xl transition-all ${slippage === opt
+            ? "bg-slate-900 text-white  "
+            : "hover:bg-slate-100 text-slate-600"
+            }`}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  </div>
 }
