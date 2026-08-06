@@ -10,8 +10,7 @@ export function Assets({ publicKey }: {
     const [copied, setCopied] = useState(false);
 
     const { loading, TokenBalances } = useTokens(publicKey);
-
-
+    
 
     useEffect(() => {
         if (copied) {
@@ -35,6 +34,8 @@ export function Assets({ publicKey }: {
 
         <div className="">
                     Account assets
+                    {TokenBalances?.tokens.map(t=><div>{t.price}</div>)}
+                    
 
         <br />
         <div className="flex justify-between mt-3 ">

@@ -9,7 +9,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { SUPPORTED_TOKENS, TokenDetails } from '../lib/tokens';
 import { PrimaryButton } from '../components/Button';
-import { useAccountTokens } from '../hooks/getAccountTokens';
+import BaseTokenSelect from '../lib/BaseTokenSelect';
+import QuoteTokenSelect from '../lib/QuoteTokenSelect';
 
 
 
@@ -23,8 +24,9 @@ export default function SwapInterface({ token }: {
 
   const [baseAsset, setBaseAsset] = useState(SUPPORTED_TOKENS[0]);
   const [quoteAsset, setQuoteAsset] = useState(SUPPORTED_TOKENS[1]);
-  const {loading,ownerTokens} = useAccountTokens();
   const [slippage, setSlippage] = useState("0.5%");
+
+
 
 
   return (
@@ -34,24 +36,16 @@ export default function SwapInterface({ token }: {
         {/* Header Section */}
         <div className="mb-8">
 
-          <PrimaryButton  onClick={()=>{
-            router.push("/")
-          }} >
-<ArrowLeft className="w-4 h-4" />
-            Back
+          
+            
 
 
-          </PrimaryButton>
-
-
+      
                     <div className="flex justify-between items-end">
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Swap Tokens</h1>
 
             {/* Powered Jupiter mock */}
-            {loading ? <div>Loading...</div> : ownerTokens.map((item : any)=>{
-              
-
-            })}
+            
 
           </div>
         </div>
@@ -66,6 +60,7 @@ export default function SwapInterface({ token }: {
             <div className="flex items-center justify-between gap-4">
               {/* Token Selector */}
 
+      <BaseTokenSelect selected={baseAsset} onChange={setBaseAsset} excludeMint={quoteAsset.mint} />
 
               {/* Amount Input */}
               <input
@@ -97,7 +92,7 @@ export default function SwapInterface({ token }: {
 
             <div className="flex items-center justify-between gap-4">
               {/* Token Selector */}
-
+ <QuoteTokenSelect selected={quoteAsset} onChange={setQuoteAsset} excludeMint={baseAsset.mint} />
             </div>
 
             <div className="flex items-center justify-between mt-4">
@@ -162,6 +157,4 @@ function Slippage({onSelect,setSlippage,slippage}:{
             ))}
           </div>
         </div>
-
-
 }
