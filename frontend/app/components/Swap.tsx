@@ -88,7 +88,7 @@ export default function SwapInterface({ publicKey }: {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 font-sans">
+    <div className="w-full font-sans">
       {/* Main Card */}
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-slate-100">
         {/* Header Section */}

@@ -28,7 +28,7 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
     if (session.status === "loading") {
         return (
             <div className="pt-8 flex justify-center ">
-                <div className="max-w-4xl rounded-2xl shadow-xl w-full p-12 flex flex-col items-center justify-center min-h-[500px]">
+                <div className="max-w-4xl rounded-2xl shadow-xl w-full p-12 flex flex-col items-center justify-center min-h-125">
                     {/* Spinning Circle */}
                     <div className="w-12 h-12 border-4 border-slate-100 border-t-slate-800 rounded-full animate-spin"></div>
                     <div className="mt-4 text-slate-500 font-medium">Loading profile...</div>

@@ -8,15 +8,29 @@ export function PrimaryButton({children,onClick}:{
   return <button onClick={onClick} type="button" className="text-white bg-black rounded-xl py-3 px-5">  {children}  </button>
 }
 
-export function SecondaryButton({children,onClick,prefix}:{
-    children : React.ReactNode,
-    onClick : ()=>void
-    prefix? : React.ReactNode
+export function SecondaryButton({
+    children,
+    onClick,
+    prefix,
+    disabled
+}: {
+    children: React.ReactNode;
+    onClick: () => void;
+    prefix?: React.ReactNode;
+    disabled?: boolean; // Added optional disabled prop
 }) {
-  return <button onClick={onClick}  className="text-white bg-blue-400 font-semibold rounded-xl py-3 px-5">  
-  {prefix}
-  {children}
-    </button>
+    return (
+        <button 
+            onClick={onClick} 
+            disabled={disabled} // Passes the disabled state to the HTML button
+            className={`text-white bg-blue-400 font-semibold rounded-xl py-3 px-5 ${
+                disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-500 transition-colors"
+            }`}
+        >  
+            {prefix}
+            {children}
+        </button>
+    );
 }
 
 

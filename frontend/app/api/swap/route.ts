@@ -58,7 +58,6 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // 5. You now have 100% type-safe and runtime-verified data!
     const data = parsedData.data;
 
 
@@ -103,6 +102,7 @@ export async function POST(request: NextRequest) {
             outputMint: data.outputMint, // USDC
             amount: data.amount,
             taker: solWallet.publicKey,
+            slippageBps: data.slippage || "0.5"   ,
         }),
         { headers: { "x-api-key": API_KEY } },
     );
@@ -110,7 +110,11 @@ export async function POST(request: NextRequest) {
 
     if (!orderResponse.ok) {
         console.error(`/order failed: ${orderResponse.status}`, await orderResponse.text());
-        process.exit(1);
+        return NextResponse.json({
+            message: "Order failed ",
+        },{
+            status: 500
+        });
     }
 
 
@@ -118,7 +122,11 @@ export async function POST(request: NextRequest) {
 
     if (!order.transaction) {
         console.error("No transaction in response:", JSON.stringify(order, null, 2));
-        process.exit(1);
+        return NextResponse.json({
+            message: "No transaction in response",
+        },{
+            status: 500
+        });
     }
 
     // Step 2: Sign the transaction
@@ -158,11 +166,20 @@ export async function POST(request: NextRequest) {
     console.log(`https://solscan.io/tx/${result.signature}`);
     if (result.status === "Success") {
         console.log("Swap successful:", JSON.stringify(result, null, 2));
+        return NextResponse.json({
+            message: "Swap successful",
+            signature: result.signature
+        },{
+            status: 200
+        });
     } else {
         console.error("Swap failed:", JSON.stringify(result, null, 2));
+        return NextResponse.json({
+            message: "Swap failed",
+        },{
+            status: 500
+        });
     }
-
-
 
 
 }
