@@ -20,49 +20,62 @@ export default function SwapInterface({ publicKey }: {
 
 
   const router = useRouter();
-  const { loading, TokenBalances } =  useTokens(publicKey);
+  const { loading, TokenBalances } = useTokens(publicKey);
   const [baseAsset, setBaseAsset] = useState(SUPPORTED_TOKENS[0]);
   const [quoteAsset, setQuoteAsset] = useState(SUPPORTED_TOKENS[1]);
   const [baseAmount, setBaseAmount] = useState<string>("");
   const [quoteAmount, setQuoteAmount] = useState("");
   const [slippage, setSlippage] = useState("0.5");
-
+  const [loader, setLoader] = useState("");
 
 
   const canSwap =
     quoteAmount &&
     baseAmount &&
-    Number(baseAmount) > Number(TokenBalances?.tokens.map(t=>t.mint===baseAsset.mint)) 
+    Number(baseAmount) > Number(TokenBalances?.tokens.map(t => t.mint === baseAsset.mint))
 
-    useEffect(() => {
-      if (!baseAmount) {
-        setQuoteAmount("");
-        return;
-      }
+  useEffect(() => {
+    if (!baseAmount) {
+      setQuoteAmount("");
+      return;
+    }
+    //@ts-ignore
+    setLoader(true);
+    const atomicAmount = toAtomic(baseAmount, baseAsset.native);
 
-      const atomicAmount = toAtomic(baseAmount, baseAsset.decimals);
-
-      const timer = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/quote?inputMint=${baseAsset.mint}&outputMint=${quoteAsset.mint}&amount=${atomicAmount}&taker=${publicKey}&slippage=${slippage}`);
-          const obj = await res.json()
-
-          console.log("\n\n\n");
-          
-          console.log(obj.outputAmount);
+    const timer = setTimeout(async () => {
 
 
-          console.log("\n\n\n");
-          
-          setQuoteAmount(toAtomic(obj.outputAmount, quoteAsset.decimals));
-          //yet to be addded
-        } catch (err) {
-          console.error(err);
+      try {
+        const res = await fetch(`/api/quote?inputMint=${baseAsset.mint}&outputMint=${quoteAsset.mint}&amount=${atomicAmount}&taker=${publicKey}&slippage=${slippage}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.log("API Error", data);
         }
-      }, 1000); // Wait 1 second after typing stops
 
-      return () => clearTimeout(timer);
-    }, [baseAmount]);
+        const amt: string = data.obj ? data.obj.outAmount : data.outAmount;
+
+        if (!amt) {
+          console.error("outAmount is missing from the response:", data);
+          setQuoteAmount("0");
+          return;
+        }
+
+
+        let ans = Number(amt) / Math.pow(10, quoteAsset.decimals);
+        setQuoteAmount(ans.toString());
+        //@ts-ignore
+        setLoader(false);
+
+      } catch (err) {
+        console.log("\nTRY CATCH FAILED\n");
+        console.error(err);
+      }
+    }, 1000); // Wait 1 second after typing stops
+
+    return () => clearTimeout(timer);
+  }, [baseAmount, baseAsset, quoteAsset, slippage, publicKey]);
 
 
   return (
@@ -126,30 +139,42 @@ export default function SwapInterface({ publicKey }: {
 
           {/* Middle Divider & Swap Button */}
           <div className="relative h-0 flex items-center justify-center border-t border-slate-200">
-            <button 
-            onClick={()=>{
-              setBaseAsset(quoteAsset);
-              setQuoteAsset(baseAsset);
-            }}  
-            className="absolute bg-white border border-slate-200 rounded-full p-2 hover:bg-slate-50 transition-colors shadow-sm text-slate-400 hover:text-slate-600">
+            <button
+              onClick={() => {
+                setBaseAsset(quoteAsset);
+                setQuoteAsset(baseAsset);
+              }}
+              className="absolute bg-white border border-slate-200 rounded-full p-2 hover:bg-slate-50 transition-colors shadow-sm text-slate-400 hover:text-slate-600">
               <ArrowUpDown className="w-5 h-5" />
             </button>
           </div>
 
           {/* Bottom Section: You Receive */}
           <div className="p-6">
-            <label className="block text-sm font-bold text-slate-700 mb-4">You Receive:</label>
+  <label className="block text-sm font-bold text-slate-700 mb-4">You Receive:</label>
 
-            <div className="flex items-center justify-between gap-4">
-              {/* Token Selector */}
-              <QuoteTokenSelect selected={quoteAsset} onChange={setQuoteAsset} excludeMint={baseAsset.mint} />
-            </div>
-            <div className='text-6xl'>{quoteAmount}</div>
+  <div className="flex items-center justify-between gap-4">
+    {/* Token Selector */}
+    <QuoteTokenSelect 
+      selected={quoteAsset} 
+      onChange={setQuoteAsset} 
+      excludeMint={baseAsset.mint} 
+    />
 
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-sm font-semibold text-slate-400">Current Balance: 0 USDC</span>
-            </div>
-          </div>
+    {/* Amount Display */}
+    <div 
+      className={`w-full text-right text-5xl font-light outline-none ${
+        loader || !quoteAmount ? "text-slate-400" : "text-slate-800"
+      }`}
+    >
+      {loader  ? "..." : quoteAmount }
+    </div>
+  </div>
+
+  <div className="flex items-center justify-between mt-4">
+    <span className="text-sm font-semibold text-slate-400">Current Balance: 0 USDC</span>
+  </div>
+</div>
         </div>
 
         {/* Footer Settings & Details */}
@@ -169,8 +194,8 @@ export default function SwapInterface({ publicKey }: {
           <button
             disabled={!canSwap}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${canSwap
-                ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
-                : "bg-slate-300 text-white cursor-not-allowed"
+              ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+              : "bg-slate-300 text-white cursor-not-allowed"
               }`}
           >
             <Check className="w-5 h-5" />
@@ -216,11 +241,19 @@ function Slippage({ onSelect, setSlippage, slippage }: {
   </div>
 }
 
+function toAtomic(amount: string, isSol: boolean): string {
+  const decimals = isSol ? 9 : 6;
 
-function toAtomic(amount: string, decimals: number): string {
-    const [whole, fraction = ""] = amount.split(".");
+  const trimmed = amount.trim();
+  if (!trimmed || trimmed === "." || !/^\d*\.?\d*$/.test(trimmed)) {
+    return "0";
+  }
 
-    const fractional = fraction.padEnd(decimals, "0").slice(0, decimals);
+  const [wholeRaw, fractionRaw = ""] = trimmed.split(".");
+  const whole = wholeRaw === "" ? "0" : wholeRaw;
+  const fraction = fractionRaw.slice(0, decimals).padEnd(decimals, "0");
 
-    return BigInt((whole || "0") + fractional).toString();
+  const combined = `${whole}${fraction}`.replace(/^0+(?=\d)/, "");
+  return BigInt(combined).toString();
 }
+
