@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { TabButton } from "./Button";
 import {useState } from "react";
 import { Assets } from "./Assets";
+import Swap from "./Swap";
 
 type Tab = "tokens" | "send" | "add_funds" | "withdraw" | "swap"
 
@@ -55,6 +56,7 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
                 }
 </div>
                 <Assets publicKey={publicKey} />
+                <Swap   publicKey={publicKey} />
             </div>
         </div>
     );
