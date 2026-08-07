@@ -26,13 +26,20 @@ export default function SwapInterface({ publicKey }: {
   const [baseAmount, setBaseAmount] = useState<string>("");
   const [quoteAmount, setQuoteAmount] = useState("");
   const [slippage, setSlippage] = useState("0.5");
-  const [loader, setLoader] = useState("");
+  const [loader, setLoader] = useState(false);
 
 
+  const currentToken = TokenBalances?.tokens.find(t => t.mint === baseAsset.mint);
+
+  // 2. Extract the actual balance number (Change `.amount` to `.balance` or `.uiAmount` if your API uses a different key)
+  const currentBalance = currentToken ? Number(currentToken.balance) : 0;
+
+  // 3. Fix the logic: baseAmount must be less than or equal to currentBalance
   const canSwap =
-    quoteAmount &&
-    baseAmount &&
-    Number(baseAmount) > Number(TokenBalances?.tokens.map(t => t.mint === baseAsset.mint))
+    Boolean(quoteAmount) &&
+    Boolean(baseAmount) &&
+    Number(baseAmount) > 0 &&
+    Number(baseAmount) <= currentBalance;
 
   useEffect(() => {
     if (!baseAmount) {
@@ -41,7 +48,9 @@ export default function SwapInterface({ publicKey }: {
     }
     //@ts-ignore
     setLoader(true);
+   
     const atomicAmount = toAtomic(baseAmount, baseAsset.native);
+    
 
     const timer = setTimeout(async () => {
 
@@ -79,7 +88,7 @@ export default function SwapInterface({ publicKey }: {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
+    <div className="min-h-screen flex items-center justify-center p-4 font-sans">
       {/* Main Card */}
       <div className="bg-white w-full max-w-3xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-slate-100">
         {/* Header Section */}
@@ -130,8 +139,15 @@ export default function SwapInterface({ publicKey }: {
             </div>
 
             <div className="flex items-center justify-between mt-4">
-              <span className="text-sm font-semibold text-slate-400">Current Balance: 0 SOL</span>
-              <button className="bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-xs font-bold px-3 py-1.5 rounded-lg">
+              <span className="text-sm font-semibold text-slate-400">Current Balance: {TokenBalances?.tokens.find(t => t.mint === baseAsset.mint)?.balance?.toFixed(2) ?? "0"} {baseAsset.name}</span>
+              <button
+                onClick={() => {
+                  const max = TokenBalances?.tokens.find(t => t.mint === baseAsset.mint)?.balance ?? "0";
+                  //@ts-ignore
+                  setBaseAmount(max.toString());
+                }
+                }
+                className="bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-xs font-bold px-3 py-1.5 rounded-lg">
                 Max
               </button>
             </div>
@@ -151,36 +167,33 @@ export default function SwapInterface({ publicKey }: {
 
           {/* Bottom Section: You Receive */}
           <div className="p-6">
-  <label className="block text-sm font-bold text-slate-700 mb-4">You Receive:</label>
+            <label className="block text-sm font-bold text-slate-700 mb-4">You Receive:</label>
 
-  <div className="flex items-center justify-between gap-4">
-    {/* Token Selector */}
-    <QuoteTokenSelect 
-      selected={quoteAsset} 
-      onChange={setQuoteAsset} 
-      excludeMint={baseAsset.mint} 
-    />
+            <div className="flex items-center justify-between gap-4">
+              {/* Token Selector */}
+              <QuoteTokenSelect
+                selected={quoteAsset}
+                onChange={setQuoteAsset}
+                excludeMint={baseAsset.mint}
+              />
 
-    {/* Amount Display */}
-    <div 
-      className={`w-full text-right text-5xl font-light outline-none ${
-        loader || !quoteAmount ? "text-slate-400" : "text-slate-800"
-      }`}
-    >
-      {loader  ? "..." : quoteAmount }
-    </div>
-  </div>
+              {/* Amount Display */}
+              <div
+                className={`w-full text-right text-5xl font-light outline-none ${loader || !quoteAmount ? "text-slate-400" : "text-slate-800"
+                  }`}
+              >
+                {loader ? "..." : quoteAmount}
+              </div>
+            </div>
 
-  <div className="flex items-center justify-between mt-4">
-    <span className="text-sm font-semibold text-slate-400">Current Balance: 0 USDC</span>
-  </div>
-</div>
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-sm font-semibold text-slate-400">Current Balance: {TokenBalances?.tokens.find(t => t.mint === quoteAsset.mint)?.balance?.toFixed(2) ?? "0"} {quoteAsset.name}</span>
+            </div>
+          </div>
         </div>
 
         {/* Footer Settings & Details */}
-        <Slippage onSelect={(slip) =>
-          setSlippage(slip)
-        }
+        <Slippage
           setSlippage={setSlippage}
           slippage={slippage}
         />
@@ -192,10 +205,11 @@ export default function SwapInterface({ publicKey }: {
 
           {/* Muted confirm button because amount is 0 */}
           <button
+            // 4. Disable when canSwap is FALSE
             disabled={!canSwap}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${canSwap
-              ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
-              : "bg-slate-300 text-white cursor-not-allowed"
+                ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+                : "bg-slate-300 text-white cursor-not-allowed"
               }`}
           >
             <Check className="w-5 h-5" />
@@ -209,8 +223,7 @@ export default function SwapInterface({ publicKey }: {
 }
 
 
-function Slippage({ onSelect, setSlippage, slippage }: {
-  onSelect: (slip: string) => void,
+function Slippage({ setSlippage, slippage }: {
   setSlippage: (slip: string) => void,
   slippage: string
 }) {

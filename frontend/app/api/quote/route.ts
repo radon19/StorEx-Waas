@@ -17,6 +17,13 @@ export async function GET (req :NextRequest) {
             message: "address, inputMint, outputMint, amount are required"
         })
     }
+    if(amount=="0"){
+        return NextResponse.json({
+            obj:{
+                outAmount:"0"
+            }
+        })
+    }
 
 
     const API_KEY =process.env.JUP_AG_API_KEY;
