@@ -61,8 +61,22 @@ async function getAccountBalance(token: {
         owner: address(owAddress),
         tokenProgram: TOKEN_PROGRAM_ADDRESS // Explicitly define the Token Program ID
     })
-    const balance = await rpc.getTokenAccountBalance(associatedTokenAddress).send();
-    return Number(balance.value.uiAmountString);
+
+    
+    const trueAdd = address(associatedTokenAddress);
+    
+    try {
+        const balance = await rpc.getTokenAccountBalance(trueAdd).send();
+        return Number(balance.value.uiAmountString);
+    } catch (error: any) {
+
+
+        if (error?.message?.includes("could not find account") || error?.code === -32602) {
+            return 0;
+        }
+        
+        throw error;
+    }
 
 
 }
