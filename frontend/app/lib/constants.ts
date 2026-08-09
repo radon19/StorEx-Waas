@@ -2,7 +2,9 @@ import { createSolanaRpc } from "@solana/kit";
 import { SUPPORTED_TOKENS } from "./tokens";
 
 
-export const rpc = createSolanaRpc("https://solana-mainnet.g.alchemy.com/v2/alch_-KRs5czXcPYKPrVztDpIt")
+const environment = process.env.ALCHEMY_RPC_KEY ?? "";
+
+export const rpc = createSolanaRpc(environment)
 
 
 
@@ -18,7 +20,6 @@ export async function getSupportedTokens() {
 
   if (!res.ok) {
     return null;
-    console.log("JUG API PROBLEM");
     
   }
 
