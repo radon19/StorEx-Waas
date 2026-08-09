@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
 import db from "@/app/db"
 import { createWallet } from '@/app/utils/wallet'
+import { encryptPrivateKey } from "../utils/crypto";
 
 declare module "next-auth" {
   interface Session {
@@ -33,7 +34,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, user, token }) {
       if (session.user && token.uid) {
-        session.user .id = token.uid;
+        session.user.id = token.uid;
       }
       return session;
     },
@@ -42,7 +43,7 @@ export const authOptions: NextAuthOptions = {
 
     async jwt({ token, account, profile }) {
       const user = await db.user.findFirst({
-        where:{
+        where: {
           sub: account?.providerAccountId ?? ""
         }
       })
@@ -73,6 +74,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         const wallet = await createWallet();
+
+        const { iv, authTag, encryptedData } = encryptPrivateKey(wallet.secretKey);
+
         await db.user.create({
           data: {
             username: userMail,
@@ -84,7 +88,9 @@ export const authOptions: NextAuthOptions = {
             solWallet: {
               create: {
                 publicKey: wallet.address,
-                privateKey: wallet.secretKey
+                encryptedPrivateKey: encryptedData,
+                iv: iv,
+                authTag: authTag,
               }
             },
             inrWallet: {

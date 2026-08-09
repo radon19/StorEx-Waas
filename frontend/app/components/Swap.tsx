@@ -31,10 +31,8 @@ export default function SwapInterface({ publicKey }: {
 
   const currentToken = TokenBalances?.tokens.find(t => t.mint === baseAsset.mint);
 
-  // 2. Extract the actual balance number (Change `.amount` to `.balance` or `.uiAmount` if your API uses a different key)
-  const currentBalance = currentToken ? Number(currentToken.balance) : 0;
+  const currentBalance = currentToken ? Number(currentToken.balance)   : 0;
 
-  // 3. Fix the logic: baseAmount must be less than or equal to currentBalance
   const canSwap =
     Boolean(quoteAmount) &&
     Boolean(baseAmount) &&

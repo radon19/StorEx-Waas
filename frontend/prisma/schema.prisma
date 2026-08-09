@@ -22,11 +22,13 @@ model User {
 }
 
 model solWallet {
-  id         String @id @default(uuid())
-  publicKey  String
-  privateKey String
-  userId     String @unique
-  user       User   @relation(fields: [userId], references: [id])
+  id                  String @id @default(uuid())
+  publicKey           String
+  encryptedPrivateKey String
+  iv                  String
+  authTag             String
+  userId              String @unique
+  user                User   @relation(fields: [userId], references: [id])
 }
 
 model inrWallet {

@@ -10,6 +10,7 @@ import {
     getTransactionEncoder,
     partiallySignTransaction,
 } from "@solana/kit";
+import { decryptPrivateKey } from "@/app/utils/crypto";
 
 
 
@@ -129,11 +130,13 @@ export async function POST(request: NextRequest) {
         });
     }
 
+
+    const pvtKey = decryptPrivateKey(solWallet.encryptedPrivateKey, solWallet.iv, solWallet.authTag);
     // Step 2: Sign the transaction
     // Use partiallySignTransaction because JupiterZ quotes require an additional
     // market maker signature, which is added during /execute
 
-    const bytes = new Uint8Array(JSON.parse(solWallet.privateKey));
+    const bytes = new Uint8Array(JSON.parse(pvtKey));
     const signer = await createKeyPairSignerFromBytes(bytes);
     const transactionBytes = Buffer.from(order.transaction, "base64");
     const transaction = getTransactionDecoder().decode(transactionBytes);
