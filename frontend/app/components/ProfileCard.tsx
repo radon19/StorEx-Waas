@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TabButton } from "./Button";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect here
 import { Assets } from "./Assets";
 import Swap from "./Swap";
 import { useTokens } from "../hooks/useTokens";
@@ -24,10 +24,14 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
     const router = useRouter();
 
     const [selectedTab, setSelectedTab] = useState<Tab>("tokens");
-  const { loading, TokenBalances } = useTokens(publicKey);
+    const { loading, TokenBalances } = useTokens(publicKey);
 
+    useEffect(() => {
+        if (session.status !== "loading" && !session.data?.user) {
+            router.push("/");
+        }
+    }, [session, router]);
 
-    // Replaced simple text with a Tailwind spinner that matches the card layout
     if (session.status === "loading") {
         return (
             <div className="pt-8 flex justify-center ">
@@ -41,11 +45,9 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
     }
 
     if (!session.data?.user) {
-        router.push("/");
         return null;
     }
 
-    // Function to handle dynamic rendering based on the selected tab
     const renderTabContent = () => {
         switch (selectedTab) {
             case "tokens":
@@ -56,7 +58,7 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
             case "add_funds":
             case "withdraw":
                 return (
-                    <div className="flex items-center justify-center py-20 text-slate-500 font-medium text-xl bg-slate-50 rounded-xl border border-slate-100 border-dashed">
+                    <div className="flex items-center justify-center py-20 text-slate-500 font-medium text-xl bg-red-300 rounded-2xl border border-slate-100 border-dashed">
                         Coming soon...
                     </div>
                 );
