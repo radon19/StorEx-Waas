@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import {
   ArrowUpDown,
   Check
@@ -11,6 +11,9 @@ import BaseTokenSelect from '../lib/BaseTokenSelect';
 import QuoteTokenSelect from '../lib/QuoteTokenSelect';
 import { useTokens } from '../hooks/useTokens';
 import axios from 'axios';
+import { toAtomic } from '../utils/formatter';
+import { Slippage } from './Slippage';
+import { initiateSwap } from '../utils/swapService';
 
 
 
@@ -52,12 +55,12 @@ export default function SwapInterface({ publicKey }: {
 
 
 
-    setLoader(true);
     if (!baseAmount) {
       setQuoteAmount("");
       return;
     }
 
+    setLoader(true);
 
     const atomicAmount = toAtomic(baseAmount, baseAsset.native);
 
@@ -71,7 +74,7 @@ export default function SwapInterface({ publicKey }: {
 
         if (!res.ok) {
           console.log("API Error", data);
-
+          setQuoteAmount("0");
           return;
         }
 
@@ -91,7 +94,7 @@ export default function SwapInterface({ publicKey }: {
       } catch (err) {
         console.log("\nTRY CATCH FAILED\n");
         console.error(err);
-      }finally{
+      } finally {
         setLoader(false);
       }
     }, 1000); // Wait 1 second after typing stops
@@ -101,6 +104,10 @@ export default function SwapInterface({ publicKey }: {
 
 
 
+
+
+
+ 
 
   return (
     <div className="w-full font-sans">
@@ -223,7 +230,7 @@ export default function SwapInterface({ publicKey }: {
             // 4. Disable when canSwap is FALSE
             disabled={!canSwap || swapping}
             onClick={() => {
-              initiateSwap({setSwapping, baseAsset, quoteAsset, baseAmount, slippage });
+              initiateSwap({ setSwapping, baseAsset, quoteAsset, baseAmount, slippage });
             }}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${canSwap
               ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
@@ -231,7 +238,7 @@ export default function SwapInterface({ publicKey }: {
               }`}
           >
             <Check className="w-5 h-5" />
-           {swapping ? "Swapping..." : "Confirm & Swap"}
+            {swapping ? "Swapping..." : "Confirm & Swap"}
           </button>
         </div>
 
@@ -240,79 +247,3 @@ export default function SwapInterface({ publicKey }: {
   );
 }
 
-
-function Slippage({ setSlippage, slippage }: {
-  setSlippage: (slip: string) => void,
-  slippage: string
-}) {
-
-
-  const options = ["0.5", "1.5", "3"];
-  return <div className="flex items-center justify-between mb-8 px-2">
-    <div>
-      Coversion rate
-    </div>
-
-    <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200 bg-white shadow-sm text-sm font-medium text-slate-600">
-      <span className="px-3 text-black-400 font-semibold">Slippage :</span>
-
-      {options.map((opt) => (
-        <button
-          key={opt}
-          onClick={() => setSlippage(opt)}
-          className={`px-4 py-1.5 rounded-xl transition-all ${slippage === opt
-            ? "bg-slate-900 text-white  "
-            : "hover:bg-slate-100 text-slate-600"
-            }`}
-        >
-          {opt}
-        </button>
-      ))}
-    </div>
-  </div>
-}
-
-function toAtomic(amount: string, isSol: boolean): string {
-  const decimals = isSol ? 9 : 6;
-
-  const trimmed = amount.trim();
-  if (!trimmed || trimmed === "." || !/^\d*\.?\d*$/.test(trimmed)) {
-    return "0";
-  }
-
-  const [wholeRaw, fractionRaw = ""] = trimmed.split(".");
-  const whole = wholeRaw === "" ? "0" : wholeRaw;
-  const fraction = fractionRaw.slice(0, decimals).padEnd(decimals, "0");
-
-  const combined = `${whole}${fraction}`.replace(/^0+(?=\d)/, "");
-  return BigInt(combined).toString();
-}
-
-async function initiateSwap({setSwapping, baseAsset, quoteAsset, baseAmount, slippage }: {
-  setSwapping: (val: boolean) => void,
-    baseAsset: TokenDetails,
-    quoteAsset: TokenDetails,
-    baseAmount: string,
-    slippage: string
-}) {
-setSwapping(true);
-
-  try {
-    const slippageBps = Math.round(Number(slippage) * 100).toString();
-    const { data } = await axios.post("/api/swap", {
-      inputMint: baseAsset.mint,
-      outputMint: quoteAsset.mint,
-      amount: toAtomic(baseAmount, baseAsset.native),
-      slippage: slippageBps,
-    });
-
-    console.log("Swap successful:", data.signature);
-  } catch (error) {
-    console.error("Swap failed:", error);
-  } finally {
-    setSwapping(true);
-  }
-
-
-
-}
