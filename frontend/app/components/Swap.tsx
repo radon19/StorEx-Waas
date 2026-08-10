@@ -6,10 +6,11 @@ import {
   Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { SUPPORTED_TOKENS } from '../lib/tokens';
+import { SUPPORTED_TOKENS, TokenDetails } from '../lib/tokens';
 import BaseTokenSelect from '../lib/BaseTokenSelect';
 import QuoteTokenSelect from '../lib/QuoteTokenSelect';
 import { useTokens } from '../hooks/useTokens';
+import axios from 'axios';
 
 
 
@@ -27,28 +28,39 @@ export default function SwapInterface({ publicKey }: {
   const [quoteAmount, setQuoteAmount] = useState("");
   const [slippage, setSlippage] = useState("0.5");
   const [loader, setLoader] = useState(false);
+  const [canSwap, setCanSwap] = useState(false);
+  const [swapping, setSwapping] = useState(false);
 
 
   const currentToken = TokenBalances?.tokens.find(t => t.mint === baseAsset.mint);
 
-  const currentBalance = currentToken ? Number(currentToken.balance)   : 0;
-
-  const canSwap =
-    Boolean(quoteAmount) &&
-    Boolean(baseAmount) &&
-    Number(baseAmount) > 0 &&
-    Number(baseAmount) <= currentBalance;
+  const currentBalance = currentToken ? Number(currentToken.balance) : 0;
 
   useEffect(() => {
+    setCanSwap(
+      Boolean(quoteAmount) &&
+      Boolean(baseAmount) &&
+      Number(baseAmount) > 0 &&
+      Number(baseAmount) <= currentBalance
+    )
+  }, [baseAmount, quoteAmount, currentBalance])
+
+
+
+
+  useEffect(() => {
+
+
+
+    setLoader(true);
     if (!baseAmount) {
       setQuoteAmount("");
       return;
     }
-    //@ts-ignore
-    setLoader(true);
-   
+
+
     const atomicAmount = toAtomic(baseAmount, baseAsset.native);
-    
+
 
     const timer = setTimeout(async () => {
 
@@ -59,6 +71,8 @@ export default function SwapInterface({ publicKey }: {
 
         if (!res.ok) {
           console.log("API Error", data);
+
+          return;
         }
 
         const amt: string = data.obj ? data.obj.outAmount : data.outAmount;
@@ -66,23 +80,26 @@ export default function SwapInterface({ publicKey }: {
         if (!amt) {
           console.error("outAmount is missing from the response:", data);
           setQuoteAmount("0");
+
           return;
         }
 
 
         let ans = Number(amt) / Math.pow(10, quoteAsset.decimals);
         setQuoteAmount(ans.toString());
-        //@ts-ignore
-        setLoader(false);
 
       } catch (err) {
         console.log("\nTRY CATCH FAILED\n");
         console.error(err);
+      }finally{
+        setLoader(false);
       }
     }, 1000); // Wait 1 second after typing stops
 
     return () => clearTimeout(timer);
   }, [baseAmount, baseAsset, quoteAsset, slippage, publicKey]);
+
+
 
 
   return (
@@ -204,14 +221,17 @@ export default function SwapInterface({ publicKey }: {
           {/* Muted confirm button because amount is 0 */}
           <button
             // 4. Disable when canSwap is FALSE
-            disabled={!canSwap}
+            disabled={!canSwap || swapping}
+            onClick={() => {
+              initiateSwap({setSwapping, baseAsset, quoteAsset, baseAmount, slippage });
+            }}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${canSwap
-                ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
-                : "bg-slate-300 text-white cursor-not-allowed"
+              ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+              : "bg-slate-300 text-white cursor-not-allowed"
               }`}
           >
             <Check className="w-5 h-5" />
-            Confirm & Swap
+           {swapping ? "Swapping..." : "Confirm & Swap"}
           </button>
         </div>
 
@@ -268,3 +288,31 @@ function toAtomic(amount: string, isSol: boolean): string {
   return BigInt(combined).toString();
 }
 
+async function initiateSwap({setSwapping, baseAsset, quoteAsset, baseAmount, slippage }: {
+  setSwapping: (val: boolean) => void,
+    baseAsset: TokenDetails,
+    quoteAsset: TokenDetails,
+    baseAmount: string,
+    slippage: string
+}) {
+setSwapping(true);
+
+  try {
+    const slippageBps = Math.round(Number(slippage) * 100).toString();
+    const { data } = await axios.post("/api/swap", {
+      inputMint: baseAsset.mint,
+      outputMint: quoteAsset.mint,
+      amount: toAtomic(baseAmount, baseAsset.native),
+      slippage: slippageBps,
+    });
+
+    console.log("Swap successful:", data.signature);
+  } catch (error) {
+    console.error("Swap failed:", error);
+  } finally {
+    setSwapping(true);
+  }
+
+
+
+}

@@ -162,7 +162,12 @@ export async function POST(request: NextRequest) {
     });
     if (!executeResponse.ok) {
         console.error(`/execute failed: ${executeResponse.status}`, await executeResponse.text());
-        process.exit(1);
+        return NextResponse.json({
+            message:"Execution Failed"
+        },
+    {
+        status:500
+    })
     }
     const result: ExecuteResponse = await executeResponse.json();
 
