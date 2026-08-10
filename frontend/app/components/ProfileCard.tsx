@@ -6,6 +6,7 @@ import { TabButton } from "./Button";
 import { useState } from "react";
 import { Assets } from "./Assets";
 import Swap from "./Swap";
+import { useTokens } from "../hooks/useTokens";
 
 type Tab = "tokens" | "send" | "add_funds" | "withdraw" | "swap"
 
@@ -23,6 +24,8 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
     const router = useRouter();
 
     const [selectedTab, setSelectedTab] = useState<Tab>("tokens");
+  const { loading, TokenBalances } = useTokens(publicKey);
+
 
     // Replaced simple text with a Tailwind spinner that matches the card layout
     if (session.status === "loading") {
@@ -46,9 +49,9 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
     const renderTabContent = () => {
         switch (selectedTab) {
             case "tokens":
-                return <Assets publicKey={publicKey} />;
+                return <Assets publicKey={publicKey} loading={loading} TokenBalances={TokenBalances} />;
             case "swap":
-                return <Swap publicKey={publicKey} />;
+                return <Swap publicKey={publicKey} TokenBalances={TokenBalances}/>;
             case "send":
             case "add_funds":
             case "withdraw":

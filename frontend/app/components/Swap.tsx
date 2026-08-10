@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowUpDown,
   Check
@@ -9,30 +9,37 @@ import { useRouter } from 'next/navigation';
 import { SUPPORTED_TOKENS, TokenDetails } from '../lib/tokens';
 import BaseTokenSelect from '../lib/BaseTokenSelect';
 import QuoteTokenSelect from '../lib/QuoteTokenSelect';
-import { useTokens } from '../hooks/useTokens';
-import axios from 'axios';
-import { toAtomic } from '../utils/formatter';
+import { TokenWithBalance, useTokens } from '../hooks/useTokens';
 import { Slippage } from './Slippage';
 import { initiateSwap } from '../utils/swapService';
+import { useQuote } from '../hooks/useQuote';
 
 
 
 
-export default function SwapInterface({ publicKey }: {
-  publicKey: string
+export default function SwapInterface({ publicKey,TokenBalances }: {
+  publicKey: string,
+  TokenBalances : {
+    totalBalance : number,
+    tokens : TokenWithBalance[]
+  }
 }) {
 
 
   const router = useRouter();
-  const { loading, TokenBalances } = useTokens(publicKey);
   const [baseAsset, setBaseAsset] = useState(SUPPORTED_TOKENS[0]);
   const [quoteAsset, setQuoteAsset] = useState(SUPPORTED_TOKENS[1]);
   const [baseAmount, setBaseAmount] = useState<string>("");
-  const [quoteAmount, setQuoteAmount] = useState("");
   const [slippage, setSlippage] = useState("0.5");
-  const [loader, setLoader] = useState(false);
   const [canSwap, setCanSwap] = useState(false);
   const [swapping, setSwapping] = useState(false);
+const { quoteAmount, loader } = useQuote({
+    baseAsset,
+    quoteAsset,
+    baseAmount,
+    slippage,
+    publicKey
+  });
 
 
   const currentToken = TokenBalances?.tokens.find(t => t.mint === baseAsset.mint);
@@ -47,62 +54,6 @@ export default function SwapInterface({ publicKey }: {
       Number(baseAmount) <= currentBalance
     )
   }, [baseAmount, quoteAmount, currentBalance])
-
-
-
-
-  useEffect(() => {
-
-
-
-    if (!baseAmount) {
-      setQuoteAmount("");
-      return;
-    }
-
-    setLoader(true);
-
-    const atomicAmount = toAtomic(baseAmount, baseAsset.native);
-
-
-    const timer = setTimeout(async () => {
-
-
-      try {
-        const res = await fetch(`/api/quote?inputMint=${baseAsset.mint}&outputMint=${quoteAsset.mint}&amount=${atomicAmount}&taker=${publicKey}&slippage=${slippage}`);
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.log("API Error", data);
-          setQuoteAmount("0");
-          return;
-        }
-
-        const amt: string = data.obj ? data.obj.outAmount : data.outAmount;
-
-        if (!amt) {
-          console.error("outAmount is missing from the response:", data);
-          setQuoteAmount("0");
-
-          return;
-        }
-
-
-        let ans = Number(amt) / Math.pow(10, quoteAsset.decimals);
-        setQuoteAmount(ans.toString());
-
-      } catch (err) {
-        console.log("\nTRY CATCH FAILED\n");
-        console.error(err);
-      } finally {
-        setLoader(false);
-      }
-    }, 1000); // Wait 1 second after typing stops
-
-    return () => clearTimeout(timer);
-  }, [baseAmount, baseAsset, quoteAsset, slippage, publicKey]);
-
-
 
 
 

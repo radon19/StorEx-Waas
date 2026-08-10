@@ -11,9 +11,12 @@ export interface TokenWithBalance extends TokenDetails{
 
 export function useTokens(address:string) {
     const [TokenBalances, setTokenBalances] = useState<{
-        totalBalance : number,
-        tokens : TokenWithBalance[]
-    } | null >(null);
+    totalBalance: number;
+    tokens: TokenWithBalance[];
+}>({
+    totalBalance: 0,
+    tokens: []
+});
 
     const [loading, setLoading] = useState(true);
 
