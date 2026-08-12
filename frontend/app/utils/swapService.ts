@@ -20,9 +20,12 @@ export async function initiateSwap({ setSwapping, baseAsset, quoteAsset, baseAmo
       slippage: slippageBps,
     });
 
-    console.log("Swap successful:", data.signature);
+    return data.signature;
+
   } catch (error) {
-    console.error("Swap failed:", error);
+    console.log(error);
+    
+    return null;
   } finally {
     setSwapping(false);
   }
