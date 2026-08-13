@@ -193,14 +193,18 @@ export default function SwapInterface({
           <button
             // 4. Disable when canSwap is FALSE
             disabled={!canSwap || swapping}
-            onClick={() => {
-              initiateSwap({
+            onClick={async () => {
+              const called = await initiateSwap({
                 setSwapping,
                 baseAsset,
                 quoteAsset,
                 baseAmount,
                 slippage,
               });
+
+              if(called){
+                setShowToast(true);
+              }
             }}
             className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${
               canSwap

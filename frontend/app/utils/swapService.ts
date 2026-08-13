@@ -24,7 +24,7 @@ export async function initiateSwap({ setSwapping, baseAsset, quoteAsset, baseAmo
 
   } catch (error) {
     console.log(error);
-    
+
     return null;
   } finally {
     setSwapping(false);

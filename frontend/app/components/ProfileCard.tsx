@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TabButton } from "./Button";
@@ -103,10 +104,17 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
 function Greeting({ image, name }: { image: string, name: string }) {
     return (
         <div className="flex items-center">
-            <img src={image} className="h-16 w-16 rounded-full mr-4 object-cover" alt={`${name}'s profile picture`} />
-            <div className="text-2xl font-semibold font-serif flex flex-col justify-center text-slate-800">
-                Welcome back, {name}!
-            </div>
-        </div>
+    <Image
+        src={image}
+        width={64}
+        height={64}
+        className="h-16 w-16 rounded-full mr-4 object-cover"
+        alt={`${name}'s profile picture`}
+    />
+
+    <div className="text-2xl font-semibold font-serif flex flex-col justify-center text-slate-800">
+        Welcome back, {name}!
+    </div>
+</div>
     )
 }
