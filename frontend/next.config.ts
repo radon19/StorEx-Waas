@@ -10,6 +10,7 @@ images: {
             },
         ],
     },
+    
 };
 
 export default nextConfig;

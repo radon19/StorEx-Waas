@@ -1,4 +1,3 @@
-import { createSolanaRpc } from "@solana/kit";
 
 
 export interface TokenDetails {
