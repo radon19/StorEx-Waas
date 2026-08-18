@@ -27,7 +27,7 @@ export function useTokens(address:string) {
             setLoading(false);
         })
     
-    }, [])
+    }, [address])
 
     return{
         loading, TokenBalances

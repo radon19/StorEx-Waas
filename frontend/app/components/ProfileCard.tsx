@@ -8,7 +8,7 @@ import { useState, useEffect } from "react"; // Added useEffect here
 import { Assets } from "./Assets";
 import Swap from "./Swap";
 import { useTokens } from "../hooks/useTokens";
-import Send from "./Send";
+import {Send} from "./Send";
 
 type Tab = "tokens" | "send" | "add_funds" | "withdraw" | "swap"
 

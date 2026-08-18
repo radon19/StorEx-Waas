@@ -3,6 +3,8 @@ import GoogleProvider from "next-auth/providers/google";
 import db from "@/app/db"
 import { createWallet } from '@/app/utils/wallet'
 import { encryptPrivateKey } from "../utils/crypto";
+import type { GoogleProfile } from "next-auth/providers/google";
+
 
 declare module "next-auth" {
   interface Session {
@@ -56,7 +58,7 @@ export const authOptions: NextAuthOptions = {
 
     async signIn({ user, account, profile, email, credentials }) {
       if (account?.provider === "google") {
-
+const googleProfile = profile as GoogleProfile;
         const userMail = user.email;
         if (!userMail) {
           return false;
@@ -80,10 +82,9 @@ export const authOptions: NextAuthOptions = {
         await db.user.create({
           data: {
             username: userMail,
-            name: profile?.name ?? "",
+            name:googleProfile?.name,
             sub: account.providerAccountId,
-            //@ts-ignore
-            profilePicture: profile?.picture,
+            profilePicture:googleProfile?.picture,
             provider: "Google",
             solWallet: {
               create: {

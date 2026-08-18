@@ -8,7 +8,12 @@ images: {
                 protocol: "https",
                 hostname: "lh3.googleusercontent.com",
             },
+{
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com', // Note: Using '**' allows all domains, but it's safer to specify exact domains like 'raw.githubusercontent.com'
+      },
         ],
+
     },
     
 };

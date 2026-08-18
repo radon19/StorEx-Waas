@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TokenDetails } from '../lib/tokens';
-import { toAtomic } from '../utils/formatter'; // Assuming you moved toAtomic here
+import { toAtomic } from '../utils/formatter';
 
 interface UseQuoteProps {
   baseAsset: TokenDetails;
@@ -20,13 +20,24 @@ export function useQuote({
   const [quoteAmount, setQuoteAmount] = useState("");
   const [loader, setLoader] = useState(false);
 
-  useEffect(() => {
+  
+  const effectDeps = [baseAmount, baseAsset, quoteAsset, slippage, publicKey];
+  const [prevEffectDeps, setPrevEffectDeps] = useState(effectDeps);
+  const depsChanged = effectDeps.some((d, i) => d !== prevEffectDeps[i]);
+
+  if (depsChanged) {
+    setPrevEffectDeps(effectDeps);
     if (!baseAmount) {
       setQuoteAmount("");
+    } else {
+      setLoader(true);
+    }
+  }
+
+  useEffect(() => {
+    if (!baseAmount) {
       return;
     }
-
-    setLoader(true);
 
     const atomicAmount = toAtomic(baseAmount, baseAsset.native);
 
@@ -44,7 +55,6 @@ export function useQuote({
         }
 
         const amt: string = data.obj ? data.obj.outAmount : data.outAmount;
-
         if (!amt) {
           console.error("outAmount is missing from the response:", data);
           setQuoteAmount("0");
@@ -56,7 +66,7 @@ export function useQuote({
       } catch (err) {
         console.log("\nTRY CATCH FAILED\n");
         console.error(err);
-        setQuoteAmount("0"); // Resetting on error is good practice
+        setQuoteAmount("0");
       } finally {
         setLoader(false);
       }
