@@ -1,7 +1,10 @@
+"use client";
+
 import { useState } from "react";
 import { TokenWithBalance } from "../hooks/useTokens";
 import BaseTokenSelect from "../lib/BaseTokenSelect";
 import { SUPPORTED_TOKENS } from "../lib/tokens";
+import { handleSend } from "../utils/sendService";
 
 export const Send = ({
   publicKey,
@@ -16,6 +19,7 @@ export const Send = ({
   const [selectedToken, setSelectedToken] = useState(SUPPORTED_TOKENS[0]);
   const [amount, setAmount] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const currentTokenData = TokenBalances.tokens.find(
     (t) => t.mint === selectedToken.mint
@@ -26,9 +30,26 @@ export const Send = ({
     setAmount(currentBalance.toString());
   };
 
+  const onSendClick = async () => {
+    const signature = await handleSend({
+      publicKey,
+      amount,
+      address,
+      tokenMint: selectedToken.mint, 
+      setIsLoading,
+    });
+
+    if (signature) {
+      alert(`Success! Transaction signature: ${signature}`);
+      setAmount("");
+      setAddress("");
+    } else {
+      alert("Transaction failed. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full font-sans flex justify-center">
-      {/* Light Theme Container */}
       <div className="bg-white w-full max-w-xl rounded-3xl shadow-sm p-8 border border-slate-200/80 text-slate-800">
         
         {/* Token Selection */}
@@ -81,13 +102,14 @@ export const Send = ({
 
         {/* Send Button */}
         <button 
-          className="w-full mt-8 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 rounded-2xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!amount || !address || Number(amount) <= 0 || Number(amount) > currentBalance}
+          className="w-full mt-8 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-4 rounded-2xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+          onClick={onSendClick}
+          disabled={!amount || !address || Number(amount) <= 0 || Number(amount) > currentBalance || isLoading}
         >
-          Send
+          {isLoading ? "Sending..." : "Send"} {/* BETTER UX */}
         </button>
-
       </div>
     </div>
   );
 };
+
