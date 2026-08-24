@@ -14,6 +14,8 @@ import { signer } from "@solana/kit-plugin-signer";
 import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { getTransferCheckedInstruction } from "@solana-program/token";
 import { getTransferSolInstruction } from "@solana-program/system";
+import { rpc } from "@/app/lib/constants";
+
 const environment = process.env.ALCHEMY_RPC_KEY ?? "";
 
 const NATIVE_SOL_MINT = "So11111111111111111111111111111111111111112";
@@ -30,6 +32,16 @@ const SUPPORTED_TOKENS = [
     decimals: 6,
   },
 ];
+
+function toBaseUnits(amount: string, decimals: number): bigint {
+  const trimmed = amount.trim();
+  if (!trimmed || !/^\d+(\.\d+)?$/.test(trimmed)) {
+    return BigInt(0);
+  }
+  const [whole, fraction = ""] = trimmed.split(".");
+  const padded = (fraction + "0".repeat(decimals)).slice(0, decimals);
+  return BigInt((whole === "" ? "0" : whole) + padded);
+}
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -125,6 +137,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const amountInBaseUnits = toBaseUnits(amount, tokenInfo.decimals);
+
     // Create client with signer and RPC
     const client = createClient()
       .use(signer(signerValue))
@@ -137,22 +151,64 @@ export async function POST(request: Request) {
     let signature: string;
 
     if (tokenMint === "So11111111111111111111111111111111111111112") {
+      // balance
+      const { value } = await rpc.getBalance(publicKey).send();
+
+      if (value < amountInBaseUnits) {
+        return NextResponse.json(
+          {
+            message: "Insufficient balance",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
       const tx1 = getTransferSolInstruction({
         source: client.payer,
-        destination: address("WALLET_A"),
-        amount: BigInt(amount),
+        destination: address(destinationAddress),
+        amount: amountInBaseUnits,
       });
       const { context } = await client.sendTransaction([tx1]);
-
       signature = context.signature;
     } else {
+
+
+const owner = address(publicKey);
+
+const tokenAccounts = await rpc
+  .getTokenAccountsByOwner(
+    owner,
+    { programId: address(tokenMint)},
+    {
+      commitment: "finalized",
+      encoding: "jsonParsed"
+    }
+  )
+  .send();
+
+const balance = BigInt(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.amount);
+
+      if (balance< amountInBaseUnits) {
+        return NextResponse.json(
+          {
+            message: "Insufficient balance",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+
       const instruction = getTransferCheckedInstruction({
         source: publicKey,
         mint: address(tokenInfo.mint),
         destination: address(destinationAddress),
         authority: client.payer,
-        amount: BigInt(amount), // 10 USDC if 6 decimals
-        decimals: 6,
+        amount: amountInBaseUnits,
+        decimals: tokenInfo.decimals,
       });
 
       const { context } = await client.sendTransaction([instruction]);

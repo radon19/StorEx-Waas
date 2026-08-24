@@ -34,7 +34,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
 
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       if (session.user && token.uid) {
         session.user.id = token.uid;
       }
@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
 
 
 
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account}) {
       const user = await db.user.findFirst({
         where: {
           sub: account?.providerAccountId ?? ""
@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
       return token
     },
 
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
 const googleProfile = profile as GoogleProfile;
         const userMail = user.email;
