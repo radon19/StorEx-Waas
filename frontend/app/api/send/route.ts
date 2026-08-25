@@ -12,7 +12,7 @@ import {
 import { decryptPrivateKey } from "@/app/utils/crypto";
 import { signer } from "@solana/kit-plugin-signer";
 import { solanaRpc } from "@solana/kit-plugin-rpc";
-import { getTransferCheckedInstruction } from "@solana-program/token";
+import { getTransferCheckedInstruction, TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda, getCreateAssociatedTokenInstruction } from "@solana-program/token";
 import { getTransferSolInstruction } from "@solana-program/system";
 import { rpc } from "@/app/lib/constants";
 
@@ -177,10 +177,15 @@ export async function POST(request: Request) {
 
 const owner = address(publicKey);
 
+
+
 const tokenAccounts = await rpc
   .getTokenAccountsByOwner(
     owner,
-    { programId: address(tokenMint)},
+    { 
+      programId:TOKEN_PROGRAM_ADDRESS,
+      mint: address(tokenMint)
+    },
     {
       commitment: "finalized",
       encoding: "jsonParsed"
@@ -188,6 +193,18 @@ const tokenAccounts = await rpc
   )
   .send();
 
+if (tokenAccounts.value.length === 0) {
+  return NextResponse.json(
+    {
+      message: "No token account found for this mint",
+    },
+    {
+      status: 400,
+    },
+  );
+}
+
+const sourceTokenAccount = tokenAccounts.value[0].pubkey;
 const balance = BigInt(tokenAccounts.value[0].account.data.parsed.info.tokenAmount.amount);
 
       if (balance< amountInBaseUnits) {
@@ -202,16 +219,42 @@ const balance = BigInt(tokenAccounts.value[0].account.data.parsed.info.tokenAmou
       }
 
 
-      const instruction = getTransferCheckedInstruction({
-        source: publicKey,
+      // Get or create recipient's Associated Token Account
+      const [destinationTokenAccount] = await findAssociatedTokenPda({
+        owner: address(destinationAddress),
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+        mint: address(tokenMint)
+      });
+
+      // Check if recipient's ATA exists
+      const destAccountInfo = await rpc.getAccountInfo(destinationTokenAccount).send();
+
+      const instructions = [];
+
+      if (!destAccountInfo.value) {
+        // Create ATA for recipient
+        const createAtaInstruction = getCreateAssociatedTokenInstruction({
+          payer: client.payer,
+          mint: address(tokenMint),
+          owner: address(destinationAddress),
+          ata: destinationTokenAccount,
+          tokenProgram: TOKEN_PROGRAM_ADDRESS,
+        });
+        instructions.push(createAtaInstruction);
+      }
+
+      // Add transfer instruction
+      const transferInstruction = getTransferCheckedInstruction({
+        source: sourceTokenAccount,
         mint: address(tokenInfo.mint),
-        destination: address(destinationAddress),
+        destination: destinationTokenAccount,
         authority: client.payer,
         amount: amountInBaseUnits,
         decimals: tokenInfo.decimals,
       });
+      instructions.push(transferInstruction);
 
-      const { context } = await client.sendTransaction([instruction]);
+      const { context } = await client.sendTransaction(instructions);
       signature = context.signature;
     }
 
