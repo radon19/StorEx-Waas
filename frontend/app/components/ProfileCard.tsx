@@ -116,7 +116,7 @@ export const ProfileCard = ({ publicKey }: { publicKey: string }) => {
             </div>
             <div className="text-right">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Solana Mainnet</p>
-              <p className="font-mono text-sm text-slate-400">—</p>
+              
             </div>
           </div>
         </div>

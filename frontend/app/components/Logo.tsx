@@ -54,7 +54,7 @@ export const Logo = ({
 
       <div className="flex flex-col justify-center">
         <div className={`font-display font-bold tracking-tight text-slate-100 flex items-baseline ${textClasses[size]}`}>
-          Stor<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600 font-extrabold">Ex</span>
+          Stor<span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-teal-600 font-extrabold">Ex</span>
         </div>
 
         {showBadge && (

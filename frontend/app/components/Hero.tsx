@@ -49,7 +49,7 @@ export default function Hero() {
 
         <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-100 mb-6">
           Trade on Solana{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-teal-600">at terminal velocity</span>
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-400 to-teal-600">at terminal velocity</span>
         </h1>
 
         <p className="text-lg sm:text-xl text-slate-400 font-medium mb-10 max-w-2xl mx-auto leading-relaxed">
