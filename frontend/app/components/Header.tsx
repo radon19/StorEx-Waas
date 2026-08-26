@@ -1,24 +1,27 @@
 "use client";
-import { signIn, signOut, useSession } from 'next-auth/react'
-import React from 'react'
-import {PrimaryButton} from './Button';
-import { Logo } from './Logo';
+import { signIn, signOut, useSession } from "next-auth/react";
+import { PrimaryButton, GhostButton } from "./Button";
+import { Logo } from "./Logo";
 
 function Header() {
-    const session = useSession();
+  const { data: session } = useSession();
   return (
-    <div className=' px-2 py-2 flex justify-between'>
-        <Logo/>
+    <header className="border-b border-abyss-700 bg-abyss-950/80 backdrop-blur-xl sticky top-0 z-50">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <Logo />
 
-        <div className=''>
-          {session.data?.user? <PrimaryButton onClick={()=>{
-            signOut()
-          }}   >  Logout </PrimaryButton> : <PrimaryButton onClick={()=>{
-            signIn()
-          }}   >  Sign In </PrimaryButton>}
+          <div className="flex items-center gap-3">
+            {session?.user ? (
+              <PrimaryButton onClick={() => signOut()}>Logout</PrimaryButton>
+            ) : (
+              <GhostButton onClick={() => signIn("google")}>Sign In</GhostButton>
+            )}
+          </div>
         </div>
-    </div>
-  )
+      </div>
+    </header>
+  );
 }
 
-export default Header
+export default Header;

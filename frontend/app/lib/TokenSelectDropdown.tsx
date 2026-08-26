@@ -8,15 +8,10 @@ interface TokenSelectDropdownProps {
   tokens: TokenDetails[];
   selected: TokenDetails;
   onChange: (token: TokenDetails) => void;
-  /** mint address to hide from the option list (e.g. whatever the paired dropdown has selected) */
   excludeMint?: string;
   label?: string;
 }
 
-/**
- * Internal, reusable pill dropdown. Not meant to be dropped into a page directly —
- * BaseTokenSelect and QuoteTokenSelect wrap this with their own token lists / exclusions.
- */
 export default function TokenSelectDropdown({
   tokens,
   selected,
@@ -59,25 +54,20 @@ export default function TokenSelectDropdown({
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center gap-2 rounded-full bg-gray-100 p-3 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-200"
+        className="flex items-center gap-2 rounded-full bg-abyss-800/50 border border-abyss-700 p-2.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-abyss-800 hover:border-abyss-600"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={selected.image} alt="" className="h-6 w-6 rounded-full object-cover" />
         <span>{selected.name}</span>
         <ChevronDown
-          className={`h-4 w-4 text-gray-500 transition-transform duration-150 ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 text-slate-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open && (
-        <ul
-          role="listbox"
-          className="absolute z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
-        >
+        <ul role="listbox" className="absolute z-20 mt-2 w-44 overflow-hidden rounded-xl border border-abyss-700 bg-abyss-900/95 backdrop-blur-xl py-1 shadow-2xl">
           {visibleTokens.length === 0 && (
-            <li className="px-3 py-2 text-sm text-gray-400">No tokens available</li>
+            <li className="px-3 py-2 text-sm text-slate-500">No tokens available</li>
           )}
           {visibleTokens.map((token) => {
             const isSelected = token.mint === selected.mint;
@@ -88,12 +78,12 @@ export default function TokenSelectDropdown({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelect(token)}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-abyss-800/50"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={token.image} alt="" className="h-5 w-5 rounded-full object-cover" />
-                  <span className="flex-1 font-medium text-gray-900">{token.name}</span>
-                  {isSelected && <Check className="h-4 w-4 text-emerald-500" />}
+                  <span className="flex-1 font-medium text-slate-100">{token.name}</span>
+                  {isSelected && <Check className="h-4 w-4 text-teal-400" />}
                 </button>
               </li>
             );

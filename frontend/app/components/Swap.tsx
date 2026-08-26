@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowUpDown, Check } from "lucide-react";
+import { ArrowUpDown, Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { SUPPORTED_TOKENS } from "../lib/tokens";
 import BaseTokenSelect from "../lib/BaseTokenSelect";
@@ -10,6 +10,7 @@ import { TokenWithBalance } from "../hooks/useTokens";
 import { Slippage } from "./Slippage";
 import { initiateSwap } from "../utils/swapService";
 import { useQuote } from "../hooks/useQuote";
+import { PrimaryButton, GhostButton } from "./Button";
 
 export default function SwapInterface({
   publicKey,
@@ -47,151 +48,132 @@ export default function SwapInterface({
     return () => clearTimeout(timer);
   }, [showToast]);
 
-  const currentToken = TokenBalances?.tokens.find(
-    (t) => t.mint === baseAsset.mint,
-  );
-
+  const currentToken = TokenBalances?.tokens.find((t) => t.mint === baseAsset.mint);
   const currentBalance = currentToken ? Number(currentToken.balance) : 0;
 
-   const canSwap : boolean =  Boolean(quoteAmount) &&
-        Boolean(baseAmount) &&
-        Number(baseAmount) > 0 &&
-        Number(baseAmount) <= currentBalance;
-   
+  const canSwap =
+    Boolean(quoteAmount) &&
+    Boolean(baseAmount) &&
+    Number(baseAmount) > 0 &&
+    Number(baseAmount) <= currentBalance;
+
+  const handleMaxClick = () => {
+    setBaseAmount(currentBalance.toString());
+  };
 
   return (
-    <div className="w-full font-sans">
-      {/* Main Card */}
-      <div className="bg-white w-full max-w-3xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-slate-100">
-        {/* Header Section */}
+    <div className="w-full font-body">
+      <div className="glass-card p-6 sm:p-8">
         <div className="mb-8">
-          <div className="flex justify-between items-end">
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-              Swap Tokens
-            </h1>
-
-            {/* Powered Jupiter mock */}
-          </div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            Swap Tokens
+          </h1>
         </div>
 
-        {/* Swap Container */}
-        <div className="relative border border-slate-200 rounded-2xl bg-white mb-4">
-          {/* Top Section: You Pay */}
-          <div className="p-6">
-            <label className="block text-sm font-bold text-slate-700 mb-4">
-              You Pay:
-            </label>
-
-            <div className="flex items-center justify-between gap-4">
-              {/* Token Selector */}
-
-              <BaseTokenSelect
-                selected={baseAsset}
-                onChange={setBaseAsset}
-                excludeMint={quoteAsset.mint}
-              />
-
-              {/* Amount Input */}
-              <input
-                type="text"
-                value={baseAmount}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  if (/^\d*\.?\d*$/.test(value)) {
-                    setBaseAmount(value);
-                  }
-                }}
-                placeholder="0"
-                className="w-full bg-transparent text-right text-5xl font-light text-slate-800 outline-none placeholder:text-slate-800"
-              />
-            </div>
-
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-sm font-semibold text-slate-400">
-                Current Balance:{" "}
-                {TokenBalances?.tokens
-                  .find((t) => t.mint === baseAsset.mint)
-                  ?.balance?.toFixed(2) ?? "0"}{" "}
-                {baseAsset.name}
-              </span>
-              <button
-                onClick={() => {
-                  const max =
-                    TokenBalances?.tokens.find((t) => t.mint === baseAsset.mint)
-                      ?.balance ?? "0";
-                  setBaseAmount(max.toString());
-                }}
-                className="bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors text-xs font-bold px-3 py-1.5 rounded-lg"
-              >
-                Max
-              </button>
-            </div>
-          </div>
-
-          {/* Middle Divider & Swap Button */}
-          <div className="relative h-0 flex items-center justify-center border-t border-slate-200">
-            <button
-              onClick={() => {
-                setBaseAsset(quoteAsset);
-                setQuoteAsset(baseAsset);
-              }}
-              className="absolute bg-white border border-slate-200 rounded-full p-2 hover:bg-slate-50 transition-colors shadow-sm text-slate-400 hover:text-slate-600"
-            >
-              <ArrowUpDown className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Bottom Section: You Receive */}
-          <div className="p-6">
-            <label className="block text-sm font-bold text-slate-700 mb-4">
-              You Receive:
-            </label>
-
-            <div className="flex items-center justify-between gap-4">
-              {/* Token Selector */}
-              <QuoteTokenSelect
-                selected={quoteAsset}
-                onChange={setQuoteAsset}
-                excludeMint={baseAsset.mint}
-              />
-
-              {/* Amount Display */}
-              <div
-                className={`w-full text-right text-5xl font-light outline-none ${
-                  loader || !quoteAmount ? "text-slate-400" : "text-slate-800"
-                }`}
-              >
-                {loader ? "..." : quoteAmount}
+        <div className="glass-elevated p-4 sm:p-6 rounded-xl mb-6">
+          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6 sm:items-start">
+            <div className="sm:pr-4">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+                You Pay
+              </label>
+              <div className="flex items-center gap-3">
+                <BaseTokenSelect
+                  selected={baseAsset}
+                  onChange={setBaseAsset}
+                  excludeMint={quoteAsset.mint}
+                />
+                <div className="relative flex-1 min-w-0">
+                  <input
+                    type="text"
+                    value={baseAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d*$/.test(value)) {
+                        setBaseAmount(value);
+                      }
+                    }}
+                    placeholder="0.00"
+                    className="input-field text-right text-2xl sm:text-3xl font-display"
+                    disabled={swapping}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-sm font-medium text-slate-500">
+                  Balance:{' '}
+                  {TokenBalances?.tokens
+                    .find((t) => t.mint === baseAsset.mint)
+                    ?.balance?.toFixed(4) ?? "0"}{' '}
+                  {baseAsset.name}
+                </span>
+                <GhostButton
+                  onClick={handleMaxClick}
+                  disabled={swapping || currentBalance === 0}
+                  className="text-xs"
+                >
+                  Max
+                </GhostButton>
               </div>
             </div>
 
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-sm font-semibold text-slate-400">
-                Current Balance:{" "}
-                {TokenBalances?.tokens
-                  .find((t) => t.mint === quoteAsset.mint)
-                  ?.balance?.toFixed(2) ?? "0"}{" "}
-                {quoteAsset.name}
-              </span>
+            <div className="flex justify-center sm:justify-center my-4 sm:my-0">
+              <button
+                onClick={() => {
+                  setBaseAsset(quoteAsset);
+                  setQuoteAsset(baseAsset);
+                }}
+                className="p-2 rounded-full bg-abyss-800/50 border border-abyss-700 text-slate-400 hover:bg-abyss-700 hover:border-abyss-600 hover:text-teal-400 transition-all duration-150 disabled:opacity-40"
+                disabled={swapping}
+                aria-label="Swap tokens"
+              >
+                <ArrowUpDown className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="sm:pl-4">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+                You Receive
+              </label>
+              <div className="flex items-center gap-3">
+                <QuoteTokenSelect
+                  selected={quoteAsset}
+                  onChange={setQuoteAsset}
+                  excludeMint={baseAsset.mint}
+                />
+                <div className="relative flex-1 min-w-0">
+                  <div className={`input-field text-right text-2xl sm:text-3xl font-display ${loader || !quoteAmount ? "text-slate-500" : "text-slate-100"}`}>
+                    {loader ? (
+                      <span className="flex items-center justify-end gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-teal-400" />
+                        <span>Calculating...</span>
+                      </span>
+                    ) : (
+                      quoteAmount ?? "—"
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-sm font-medium text-slate-500">
+                  Balance:{' '}
+                  {TokenBalances?.tokens
+                    .find((t) => t.mint === quoteAsset.mint)
+                    ?.balance?.toFixed(4) ?? "0"}{' '}
+                  {quoteAsset.name}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Footer Settings & Details */}
         <Slippage setSlippage={setSlippage} slippage={slippage} />
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-6 py-4 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
-          >
-            Cancel
-          </button>
 
-          {/* Muted confirm button because amount is 0 */}
-          <button
-            // 4. Disable when canSwap is FALSE
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <GhostButton onClick={() => router.push("/dashboard")} disabled={swapping}>
+            Cancel
+          </GhostButton>
+
+          <PrimaryButton
             disabled={!canSwap || swapping}
             onClick={async () => {
               const called = await initiateSwap({
@@ -202,19 +184,24 @@ export default function SwapInterface({
                 slippage,
               });
 
-              if(called){
+              if (called) {
                 setShowToast(true);
               }
             }}
-            className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${
-              canSwap
-                ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
-                : "bg-slate-300 text-white cursor-not-allowed"
-            }`}
+            className="flex-1"
           >
-            <Check className="w-5 h-5" />
-            {swapping ? "Swapping..." : "Confirm & Swap"}
-          </button>
+            {swapping ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Swapping...
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5" />
+                Confirm & Swap
+              </>
+            )}
+          </PrimaryButton>
         </div>
       </div>
     </div>

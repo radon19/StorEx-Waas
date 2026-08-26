@@ -1,1 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --color-abyss-950: #030712;
+  --color-abyss-900: #0c1222;
+  --color-abyss-800: #111827;
+  --color-abyss-700: #1e293b;
+  --color-abyss-600: #334155;
+  --color-abyss-500: #475569;
+  --color-abyss-400: #64748b;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-rose-400: #f87171;
+  --color-rose-500: #ef4444;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui;
+  --font-body: "DM Sans", ui-sans-serif, system-ui;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-heartbeat: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.008); }
+}
+
+@layer base {
+  :root {
+    --font-sans: var(--font-body);
+  }
+
+  html {
+    @apply h-full antialiased;
+  }
+
+  body {
+    @apply min-h-full bg-abyss-950 text-slate-300 font-body;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, #0c1222 0%, #030712 60%), #030712;
+  }
+
+  * {
+    @apply border-abyss-700;
+  }
+
+  ::selection {
+    @apply bg-teal-500/30 text-teal-100;
+  }
+
+  ::placeholder {
+    @apply text-slate-500;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-abyss-900/80 backdrop-blur-xl border border-abyss-700 rounded-2xl;
+  }
+
+  .glass-elevated {
+    @apply bg-abyss-800/90 backdrop-blur-xl border border-abyss-600 rounded-2xl;
+  }
+
+  .input-field {
+    @apply w-full bg-abyss-800/50 border border-abyss-700 rounded-xl px-4 py-3.5
+           text-slate-100 placeholder-slate-500 font-mono text-lg
+           focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500
+           transition-colors duration-150;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl
+           font-semibold text-sm text-abyss-950 bg-teal-400
+           hover:bg-teal-300 active:bg-teal-500
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-400/50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl
+           font-semibold text-sm text-slate-100 bg-abyss-800 border border-abyss-600
+           hover:bg-abyss-700 hover:border-abyss-500 active:bg-abyss-600
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500/50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+           font-medium text-sm text-slate-400
+           hover:text-slate-100 hover:bg-abyss-800/50
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500/50;
+  }
+
+  .tab-btn {
+    @apply px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-teal-500/50;
+  }
+
+  .tab-btn-active {
+    @apply bg-teal-500/15 text-teal-400 border border-teal-500/30;
+  }
+
+  .tab-btn-inactive {
+    @apply text-slate-500 hover:text-slate-300 hover:bg-abyss-800/50;
+  }
+
+  .dropdown-trigger {
+    @apply flex items-center gap-2 w-full px-3 py-2.5 rounded-xl
+           bg-abyss-800/50 border border-abyss-700 text-slate-100 font-medium text-sm
+           hover:bg-abyss-800 hover:border-abyss-600
+           focus:outline-none focus:ring-2 focus:ring-teal-500/50
+           transition-all duration-150;
+  }
+
+  .dropdown-menu {
+    @apply absolute z-20 mt-2 w-full min-w-[180px] max-h-60 overflow-auto
+           rounded-xl border border-abyss-700 bg-abyss-900/95 backdrop-blur-xl
+           py-1.5 shadow-2xl;
+  }
+
+  .dropdown-item {
+    @apply flex items-center gap-3 w-full px-3 py-2.5 text-left text-sm font-medium
+           text-slate-300 hover:text-slate-100 hover:bg-abyss-800/50
+           transition-colors duration-100;
+  }
+
+  .dropdown-item-selected {
+    @apply text-teal-400 bg-teal-500/10;
+  }
+
+  .token-row {
+    @apply flex items-center justify-between py-3 border-b border-abyss-800/50
+           last:border-0 transition-colors duration-150 hover:bg-abyss-800/30 rounded-xl px-2 -mx-2;
+  }
+
+  .balance-heartbeat {
+    animation: heartbeat 2s ease-in-out infinite;
+  }
+
+  .skeleton {
+    @apply bg-abyss-700/50 animate-pulse rounded-xl;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.abyss.700') transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.abyss.700');
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: theme('colors.abyss.600');
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}

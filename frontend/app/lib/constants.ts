@@ -1,11 +1,10 @@
-import { createSolanaRpc, createSolanaRpcSubscriptions } from "@solana/kit";
+import { createSolanaRpc } from "@solana/kit";
 import { SUPPORTED_TOKENS } from "./tokens";
 
 
 const environment = process.env.ALCHEMY_RPC_KEY ?? "";
 
 export const rpc = createSolanaRpc(environment);
-export const rpcSubscriptions = createSolanaRpcSubscriptions(environment.replace("https://", "wss://"));
 
 
 
