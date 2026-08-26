@@ -22,6 +22,7 @@ export const Send = ({
   const [amount, setAmount] = useState<string>("");
   const [address, setAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [successSignature, setSuccessSignature] = useState<string | null>(null);
 
   const currentTokenData = TokenBalances.tokens.find(
     (t) => t.mint === selectedToken.mint
@@ -42,7 +43,7 @@ export const Send = ({
     });
 
     if (signature) {
-      alert(`Success! Transaction signature: ${signature}`);
+      setSuccessSignature(signature);
       setAmount("");
       setAddress("");
     } else {
@@ -140,6 +141,42 @@ export const Send = ({
           </div>
         </div>
       </div>
+
+      {successSignature && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setSuccessSignature(null)}
+        >
+          <div
+            className="glass-card p-6 w-96 flex flex-col items-center gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <Check className="w-7 h-7 text-emerald-400" />
+            </div>
+            <h2 className="font-display text-xl font-bold text-slate-100">Transaction Successful</h2>
+            <p className="text-sm text-slate-400 text-center">Your transaction has been confirmed.</p>
+            <div className="w-full bg-abyss-800/60 rounded-xl p-3">
+              <p className="text-xs text-slate-500 mb-1">Signature</p>
+              <p className="font-mono text-xs text-slate-300 break-all">{successSignature}</p>
+            </div>
+            <a
+              href={`https://solscan.io/tx/${successSignature}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary w-full text-center"
+            >
+              View on Solscan
+            </a>
+            <button
+              onClick={() => setSuccessSignature(null)}
+              className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

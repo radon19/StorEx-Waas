@@ -3,7 +3,7 @@
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { PrimaryButton, GhostButton } from "./Button";
+import { PrimaryButton } from "./Button";
 import { Logo } from "./Logo";
 
 export default function Hero() {
