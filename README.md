@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/icon.svg" alt="StorEx Logo" width="80" />
+<img src="https://github.com/radon19/StorEx-Waas/blob/9f8b4beebfa8f5f6334da5cc3cca0c441bd161f1/frontend/app/icon.svg" alt="StorEx Logo" width="80" />
 
 # StorEx
 
