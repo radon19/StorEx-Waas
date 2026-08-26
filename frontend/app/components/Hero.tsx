@@ -80,9 +80,7 @@ export default function Hero() {
               {isLoading ? "Loading..." : "Connect with Google"}
             </PrimaryButton>
           )}
-          <GhostButton className="w-full sm:w-auto" onClick={() => router.push("/dashboard")}>
-            View Demo
-          </GhostButton>
+          
         </div>
 
         <div className="mt-16 flex items-center justify-center gap-8 text-slate-500 text-sm font-mono">
