@@ -23,8 +23,13 @@ declare module "next-auth/jwt" {
   }
 }
 
+const secretKey = process.env.NEXTAUTH_SECRET ?? "abc123456.envaaasd2";
+
+
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || 'LadleMeow',
+  secret: secretKey,
+  
   providers: [
 
     GoogleProvider({
