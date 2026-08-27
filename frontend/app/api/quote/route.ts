@@ -13,8 +13,9 @@ export async function GET (req :NextRequest) {
 
     if (!address || !inputMint || !outputMint || !amount ){
         return NextResponse.json({
-            status: 400,
             message: "address, inputMint, outputMint, amount are required"
+        },{
+            status: 400
         })
     }
     if(amount=="0"){
@@ -29,8 +30,9 @@ export async function GET (req :NextRequest) {
     const API_KEY =process.env.JUP_AG_API_KEY;
     if (!API_KEY) {
         return NextResponse.json({
-            status: 500,
             message: "API error",
+        },{
+            status: 500
         });
     }
     const res = await fetch(`https://api.jup.ag/swap/v2/order?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&taker=${address}&slippageBps=${slippage}`, {
